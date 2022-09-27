@@ -1,7 +1,7 @@
 /* Cleaning data in SQl queries*/
 
-select*
-from `datacleaning`.`nashville housing data for data cleaning`;
+SELECT*
+FROM  `datacleaning`.`nashville housing data for data cleaning`;
 
 -- Standardized sale date
 SELECT SaleDate
@@ -10,30 +10,30 @@ FROM `datacleaning`.`nashville housing data for data cleaning`;
 
 select PropertyAddress
     FROM datacleaning.`nashville housing data for data cleaning` 
-    where PropertyAddress is null;
-    
-select a1.ParcelID,a1.PropertyAddress,a2.ParcelID,a2.PropertyAddress,
-    case when a1.PropertyAddress is null then a2.PropertyAddress else a1.PropertyAddress end
-    FROM datacleaning.`nashville housing data for data cleaning` as a1
-left  join
-   datacleaning.`nashville housing data for data cleaning` as a2
-   on a1.ParcelID=a2.ParcelID
-   and a1.UniqueID<>a2.UniqueID
-   where a1.PropertyAddress is null;
-   
-   select a1.ParcelID,a1.PropertyAddress,a2.ParcelID,coalesce(a1.PropertyAddress,a2.PropertyAddress)
-FROM datacleaning.`nashville housing data for data cleaning` as a1
-  join
-   datacleaning.`nashville housing data for data cleaning` as a2
-   on a1.ParcelID=a2.ParcelID
-   and a1.UniqueID<>a2.UniqueID
-   where a1.PropertyAddress is null;
+   WHERE PropertyAddress IS NULL;
+    -- USING the case statement
+SELECT a1.ParcelID,a1.PropertyAddress,a2.ParcelID,a2.PropertyAddress,
+    CASE WHEN a1.PropertyAddress IS NULL THEN a2.PropertyAddress ELSE a1.PropertyAddress END
+    FROM datacleaning.`nashville housing data for data cleaning` AS a1
+LEFT JOIN
+   datacleaning.`nashville housing data for data cleaning` AS a2
+   ON a1.ParcelID=a2.ParcelID
+ AND a1.UniqueID<>a2.UniqueID
+ WHERE a1.PropertyAddress IS NULL ;
+   -- USING coalesce
+   SELECT a1.ParcelID,a1.PropertyAddress,a2.ParcelID,coalesce(a1.PropertyAddress,a2.PropertyAddress)
+FROM datacleaning.`nashville housing data for data cleaning` AS a1
+  JOIN
+   datacleaning.`nashville housing data for data cleaning` AS a2
+ ON a1.ParcelID=a2.ParcelID
+  AND a1.UniqueID<>a2.UniqueID
+WHERE a1.PropertyAddress IS NULL;
    -- updating the property address
-  update  datacleaning.`nashville housing data for data cleaning` as a1  
- join    datacleaning.`nashville housing data for data cleaning` as a2  
- on a1.ParcelID=a2.ParcelID    and a1.UniqueID<>a2.UniqueID    
- set     a1.PropertyAddress = coalesce(a1.PropertyAddress,a2.PropertyAddress)  
- where a1.PropertyAddress is null;
+UPDATE  datacleaning.`nashville housing data for data cleaning` AS a1  
+JOIN   datacleaning.`nashville housing data for data cleaning` AS a2  
+ON a1.ParcelID=a2.ParcelID  AND a1.UniqueID<>a2.UniqueID    
+SET    a1.PropertyAddress =coalesce(a1.PropertyAddress,a2.PropertyAddress)  
+ WHERE a1.PropertyAddress IS NULL;
  
  -- Breaking out address into individual columns(address,city,state)
  
@@ -41,18 +41,18 @@ FROM datacleaning.`nashville housing data for data cleaning` as a1
  FROM datacleaning.`nashville housing data for data cleaning`;
  -- where PropertyAddress in null
  -- order by ParcelID
- SELECT substring(PropertyAddress,1,locate(',',PropertyAddress)-1) as Address,
-substring(PropertyAddress,locate(',',PropertyAddress)+1,length(PropertyAddress)) as Address
+ SELECT substring(PropertyAddress,1,locate(',',PropertyAddress)-1) AS Address,
+substring(PropertyAddress,locate(',',PropertyAddress)+1,length(PropertyAddress)) AS Address
  FROM datacleaning.`nashville housing data for data cleaning`;
  
  ALTER TABLE `datacleaning`.`nashville housing data for data cleaning`
- add PropertysplitAddress varchar(255);
+ADD PropertysplitAddress VARCHAR(255);
  
  UPDATE `datacleaning`.`nashville housing data for data cleaning`
  SET PropertysplitAddress=substring(PropertyAddress,1,locate(',',PropertyAddress)-1);
  
  Alter TABLE `datacleaning`.`nashville housing data for data cleaning`
- ADD Propertysplitcity varchar(255);
+ ADD Propertysplitcity VARCHAR(255);
  
  UPDATE datacleaning.`nashville housing data for data cleaning`
  SET Propertysplitcity =substring(PropertyAddress,locate(',',PropertyAddress)+1,length(PropertyAddress));
@@ -107,18 +107,17 @@ WHEN SoldAsVacant='N' THEN 'NO'
 ELSE SoldAsVacant 
 END;
 
--- remove duplicates
+-- identifying duplicates
 SELECT *,
-ROW_NUMBER() OVER(PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) as row_num
+ROW_NUMBER() OVER(PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) AS row_num
 FROM `datacleaning`.`nashville housing data for data cleaning`;
 
 WITH Rownumb AS (SELECT *,
 ROW_NUMBER() OVER(
-PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) as row_num
+PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) AS row_num
 FROM `datacleaning`.`nashville housing data for data cleaning`)
- DELETE 
+ DELETE row_num
  FROM Rownumb 
- PARTITION (UniqueID, ParcelID, LandUse, PropertyAddress, SaleDate, SalePrice, LegalReference, SoldAsVacant, OwnerName, OwnerAddress, Acreage, TaxDistrict, LandValue, BuildingValue, TotalValue, YearBuilt, Bedrooms, FullBath, HalfBath, PropertysplitAddress, Propertysplitcity, OwnersplitAddress, OwnersplitCity, OwnersplitState)
  WHERE row_num >1;
  
  -- delete unused columns
