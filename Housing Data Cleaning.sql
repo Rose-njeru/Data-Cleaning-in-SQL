@@ -39,7 +39,7 @@ SET    a1.PropertyAddress =coalesce(a1.PropertyAddress,a2.PropertyAddress)
  
  SELECT PropertyAddress
  FROM datacleaning.`nashville housing data for data cleaning`;
- -- where PropertyAddress in null
+-- WHERE PROPERTY ADDRESS IS NULL
  -- order by ParcelID
  SELECT substring(PropertyAddress,1,locate(',',PropertyAddress)-1) AS Address,
 substring(PropertyAddress,locate(',',PropertyAddress)+1,length(PropertyAddress)) AS Address
@@ -112,14 +112,7 @@ SELECT *,
 ROW_NUMBER() OVER(PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) AS row_num
 FROM `datacleaning`.`nashville housing data for data cleaning`;
 
-WITH Rownumb AS (SELECT *,
-ROW_NUMBER() OVER(
-PARTITION BY ParcelID,PropertyAddress,SalePrice,SaleDate,LegalReference ORDER BY UniqueID) AS row_num
-FROM `datacleaning`.`nashville housing data for data cleaning`)
- DELETE row_num
- FROM Rownumb 
- WHERE row_num >1;
- 
+
  -- delete unused columns
  
  SELECT *
@@ -133,6 +126,10 @@ FROM `datacleaning`.`nashville housing data for data cleaning`)
  DROP COLUMN TaxDistrict;
 ALTER TABLE `datacleaning`.`nashville housing data for data cleaning`
  DROP COLUMN SaleDate ;
+ 
+ -- final table
+ SELECT *
+ FROM `datacleaning`.`nashville housing data for data cleaning`
 
 
 
