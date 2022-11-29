@@ -15,3 +15,5 @@ Select,Fom,Where,Insert,Update,delete commands manipulated diffrent columns in t
  #### Substring_index
   Identifying the delimeter in Owner Address column and breaking it into indidual columns
 
+#### Type of join
+The table was joined with itself while performing data manipulation
