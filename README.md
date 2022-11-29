@@ -1,6 +1,6 @@
 # Data-Cleaning-in-SQL
 
-##Nashville Housing Data Cleaning using MySQl Workbench
+🏘 Nashville Housing Data Cleaning using MySQl Workbench
 
 ### Data Defination Language
  The Alter and Drop commands were used in defining diffrent columns in the dataset
